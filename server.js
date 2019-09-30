@@ -66,36 +66,6 @@ app.post('/user', function (req, res) {
         return res.send({ error: false, data: results, message: 'New user has been created successfully.' });
     });
 });
- 
-
-
-//  Update user with id
-// app.put('/user', function (req, res) {
-  
-//     let user_id = req.body.user_id;
-//     let user = req.body.user;
-  
-//     if (!user_id || !user) {
-//         return res.status(400).send({ error: user, message: 'Please provide user and user_id' });
-//     }
-  
-//     dbConn.query("UPDATE users SET user = ? WHERE id = ?", [user, user_id], function (error, results, fields) {
-//         if (error) throw error;
-//         return res.send({ error: false, data: results, message: 'user has been updated successfully.' });
-//     });
-// });
- 
-
-// Delete user with id 
-app.delete('/user/:id',(req,res)=>{
-    dbConn.query('DELETE FROM users WHERE id=?',[req.params.id],(err,rows,fields)=>{
-        if(!err)
-        res.send('Deleted Successfully');
-        else
-        console.log(err);
-    });
-});
-    
 
 
 // Insert user with id 
@@ -111,19 +81,60 @@ app.delete('/user/:id',(req,res)=>{
 //     });
 // });
 
+
+//  Update user with id
+app.put('/user/:id', function (req, res) {
+  
+    let user_id = req.body.user_id;
+    let user = req.body.user;
+  
+    if (!user_id || !user) {
+        return res.status(400).send({ error: user, message: 'Please provide user and user_id' });
+    }
+  
+    dbConn.query("UPDATE users SET user = ? WHERE id = ?", [user, user_id], function (error, results, fields) {
+        if (error) throw error;
+        return res.send({ error: false, data: results, message: 'user has been updated successfully.' });
+    });
+});
+ 
 // Update user with id
-app.put('/user/:id',(req,res)=>{
-    let emp = req.body;
-    var sql = "SET @id = ?;SET @first_name = ?;SET @last_name = ?;SET @user_name = ?;SET @email = ?;SET @password = ?;SET @DOB = ?;SET @follow_unfollow = ?; \
-    CALL UserAddOrEdit(@id,@first_name,@last_name,@user_name,@email,@password,@DOB,@follow_unfollow);";
-    dbConn.query(sql,[emp.id,emp.first_name,emp.last_name,emp.user_name,emp.email,emp.password,emp.DOB,emp.follow_unfollow],(err,rows,fields)=>{
-        if(!err)
-        res.send('Updated Successfully');
-        else
-        console.log(err);
+// app.put('/user/:id',(req,res)=>{
+//     let emp = req.body;
+//     var sql = "SET @id = ?;SET @first_name = ?;SET @last_name = ?;SET @user_name = ?;SET @email = ?;SET @password = ?;SET @DOB = ?;SET @follow_unfollow = ?; \
+//     CALL UserAddOrEdit(@id,@first_name,@last_name,@user_name,@email,@password,@DOB,@follow_unfollow);";
+//     dbConn.query(sql,[emp.id,emp.first_name,emp.last_name,emp.user_name,emp.email,emp.password,emp.DOB,emp.follow_unfollow],(err,rows,fields)=>{
+//         if(!err)
+//         res.send('Updated Successfully');
+//         else
+//         console.log(err);
+//     });
+// });
+
+
+//  Delete user
+app.delete('/user/:id', function (req, res) {
+  
+    let user_id = req.body.user_id;
+  
+    if (!user_id) {
+        return res.status(400).send({ error: true, message: 'Please provide user_id' });
+    }
+    dbConn.query('DELETE FROM users WHERE id = ?', [user_id], function (error, results, fields) {
+        if (error) throw error;
+        return res.send({ error: false, data: results, message: 'User has been updated successfully.' });
     });
 });
 
+// Delete user with id 
+// app.delete('/user/:id',(req,res)=>{
+//     dbConn.query('DELETE FROM users WHERE id=?',[req.params.id],(err,rows,fields)=>{
+//         if(!err)
+//         res.send('Deleted Successfully');
+//         else
+//         console.log(err);
+//     });
+// });
 
 
 // follow user
