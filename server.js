@@ -139,7 +139,7 @@ app.delete('/user/:id', function (req, res) {
 
 // follow user
 app.post("/follow/:id", function(req, res){
-    var follow = {follower_id:currentUser.id, followee_id:user_id};
+    var follow = {user_id:currentUser.id, user_id:followee_id};
 
     connection.query('INSERT INTO users SET ?', follow , function(err, result) {
         if (err) throw err;
@@ -149,8 +149,8 @@ app.post("/follow/:id", function(req, res){
 
 
 // unfollow user
-app.delete("/unfollow", function(req, res){
-    var unfollow = {follower_id:currentUser.id, followee_id:user_id};
+app.delete("/unfollow/:id", function(req, res){
+    var unfollow = {user_id:currentUser.id, user_id:follower_id};
 
     connection.query('DELETE INTO users SET ?', unfollow , function(err, result) {
         if (err) throw err;
