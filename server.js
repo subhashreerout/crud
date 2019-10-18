@@ -7,8 +7,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
     extended: true
 }));
-  
-  
+
+const { check, validationResult } = require('express-validator');
+
 // default route
 app.get('/', function (req, res) {
     return res.send({ error: true, message: 'hello' })
@@ -18,8 +19,8 @@ var dbConn = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: '',
-    database: 'userdb',
-    multipleStatements: true
+    database: 'cruddb',
+    // multipleStatements: true
 });
   
 // connect to database
@@ -52,111 +53,92 @@ app.get('/user/:id', function (req, res) {
 });
 
 
-// Add a new user  
-app.post('/user', function (req, res) {
-  
-    let user = req.body.user;
-  
-    if (!user) {
-        return res.status(400).send({ error:true, message: 'Please provide user' });
-    }
-  
-    dbConn.query("INSERT INTO users SET ? ", { user: user }, function (error, results, fields) {
+// Search for todos with ‘bug’ in their name
+app.get('/users/search/:keyword', function (req, res) {
+    let keyword = req.params.keyword;
+    dbConn.query("SELECT * FROM users WHERE user LIKE ? ", ['%' + keyword + '%'], function (error, results, fields) {
         if (error) throw error;
-        return res.send({ error: false, data: results, message: 'New user has been created successfully.' });
+        return res.send({ error: false, data: results, message: 'Users search list.' });
     });
 });
 
 
-// Insert user with id 
-// app.post('/user',(req,res)=>{
-//     let emp = req.body;
-//     var sql = "SET @id = ?;SET @first_name = ?;SET @last_name = ?;SET @user_name = ?;SET @email = ?;SET @password = ?;SET @DOB = ?;SET @follow_unfollow = ?; \
-//     CALL UserAddOrEdit(@id,@first_name,@last_name,@user_name,@email,@password,@DOB,@follow_unfollow);";
-//     dbConn.query(sql,[emp.id,emp.first_name,emp.last_name,emp.user_name,emp.email,emp.password,emp.DOB,emp.follow_unfollow],(err,rows,fields)=>{
-//         if(!err)
-//         res.send('Inserted Successfully');
-//         else
-//         console.log(err);
-//     });
-// });
+
+app.get('/users/search/:keyword', function (req, res) {
+    let keyword = req.body.keyword;
+    dbConn.query("SELECT * FROM users WHERE user LIKE ? ", ['%' + keyword + '%'], function (error, results, fields) {
+        if (error) throw error;
+        return res.send({ error: false, data: results, message: 'Users search list.' });
+    });
+});
+
+// Insert new user 
+app.post('/users', function (req, res) {
+    var postData = req.body;
+    if (!postData) {
+              return res.status(400).send({ status:false, message: 'Please provide user' });
+            }
+    dbConn.query("INSERT INTO users SET ?", postData, function (error, results, fields) {
+        if (error) throw error;
+        return res.send({ code: 200, status: true, message: 'New user has been created successfully.', insertId: results.insertId });
+        console.log(results.insertId); // Auto increment id
+        // res.end(JSON.stringify(results));
+      });
+    });
+
 
 
 //  Update user with id
 app.put('/user/:id', function (req, res) {
-  
-    let user_id = req.body.user_id;
-    let user = req.body.user;
+
+    var user = req.body;
+    var user_id = req.body.user_id;
   
     if (!user_id || !user) {
-        return res.status(400).send({ error: user, message: 'Please provide user and user_id' });
+        return res.status(400).send({code: 400, status: false, message: 'Please provide user and user_id' });
     }
   
     dbConn.query("UPDATE users SET user = ? WHERE id = ?", [user, user_id], function (error, results, fields) {
         if (error) throw error;
-        return res.send({ error: false, data: results, message: 'user has been updated successfully.' });
+        return res.send({ code: 200, status: true, message: 'user has been updated successfully.' });
     });
 });
- 
-// Update user with id
-// app.put('/user/:id',(req,res)=>{
-//     let emp = req.body;
-//     var sql = "SET @id = ?;SET @first_name = ?;SET @last_name = ?;SET @user_name = ?;SET @email = ?;SET @password = ?;SET @DOB = ?;SET @follow_unfollow = ?; \
-//     CALL UserAddOrEdit(@id,@first_name,@last_name,@user_name,@email,@password,@DOB,@follow_unfollow);";
-//     dbConn.query(sql,[emp.id,emp.first_name,emp.last_name,emp.user_name,emp.email,emp.password,emp.DOB,emp.follow_unfollow],(err,rows,fields)=>{
-//         if(!err)
-//         res.send('Updated Successfully');
-//         else
-//         console.log(err);
-//     });
-// });
 
 
-//  Delete user
-app.delete('/user/:id', function (req, res) {
-  
-    let user_id = req.body.user_id;
-  
-    if (!user_id) {
-        return res.status(400).send({ error: true, message: 'Please provide user_id' });
-    }
-    dbConn.query('DELETE FROM users WHERE id = ?', [user_id], function (error, results, fields) {
-        if (error) throw error;
-        return res.send({ error: false, data: results, message: 'User has been updated successfully.' });
-    });
-});
 
 // Delete user with id 
-// app.delete('/user/:id',(req,res)=>{
-//     dbConn.query('DELETE FROM users WHERE id=?',[req.params.id],(err,rows,fields)=>{
-//         if(!err)
-//         res.send('Deleted Successfully');
-//         else
-//         console.log(err);
-//     });
-// });
+app.delete('/user/:id',(req,res)=>{
+    dbConn.query('DELETE FROM users WHERE id=?',[req.params.id],(err,rows,fields)=>{
+        if(!err)
+        res.send({code: 400, status: true, message: 'Deleted Successfully'});
+        else
+        return res.send({code: 200, status: false, message: 'Provide user id'})
+        console.log(err);
+    });
+});
+
 
 
 // follow user
 app.post("/follow/:id", function(req, res){
-    var follow = {user_id:currentUser.id, user_id:followee_id};
-
-    connection.query('INSERT INTO users SET ?', follow , function(err, result) {
+    var follow = {id:follower_id, user_id:followed_id};
+    
+    connection.query('INSERT INTO follow_unfollow SET ?', follow , function(err, result) {
         if (err) throw err;
         res.redirect("/");
     });
 });
-
 
 // unfollow user
-app.delete("/unfollow/:id", function(req, res){
-    var unfollow = {user_id:currentUser.id, user_id:follower_id};
+app.delete("/unfollow:id", function(req, res){
+  var unfollow = {id:follower_id, user_id:followed_id};
 
-    connection.query('DELETE INTO users SET ?', unfollow , function(err, result) {
-        if (err) throw err;
-        res.redirect("/");
+  connection.query('DELETE INTO follow_unfollow SET ?', unfollow , function(err, result) {
+      if (err) throw err;
+      res.redirect("/");
     });
 });
+
  
 // set port
 app.listen(3000, function () {
