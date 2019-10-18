@@ -53,24 +53,22 @@ app.get('/user/:id', function (req, res) {
 });
 
 
-// Search for todos with ‘bug’ in their name
-app.get('/users/search/:keyword', function (req, res) {
+// Retrieve user using keyword
+app.get('/user/search/:keyword', function (req, res) {
+    // let keyword = req.body.user_name
     let keyword = req.params.keyword;
-    dbConn.query("SELECT * FROM users WHERE user LIKE ? ", ['%' + keyword + '%'], function (error, results, fields) {
+    if (!keyword) {
+        return res.status(400).send({ error: true, message: 'Please provide user' });
+    }
+  
+    dbConn.query('SELECT * FROM users where first_name like ?', keyword, function (error, results, fields) {
         if (error) throw error;
-        return res.send({ error: false, data: results, message: 'Users search list.' });
+        return res.send({ error: false, data: results, message: 'users list.' });
     });
+  
 });
 
 
-
-app.get('/users/search/:keyword', function (req, res) {
-    let keyword = req.body.keyword;
-    dbConn.query("SELECT * FROM users WHERE user LIKE ? ", ['%' + keyword + '%'], function (error, results, fields) {
-        if (error) throw error;
-        return res.send({ error: false, data: results, message: 'Users search list.' });
-    });
-});
 
 // Insert new user 
 app.post('/users', function (req, res) {
